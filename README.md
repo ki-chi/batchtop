@@ -3,7 +3,18 @@
 `batchtop` is a read-only, keyboard-first AWS Batch TUI focused on Array Job progress and failed-child logs.
 
 ```bash
-cargo run --release -- --profile research-prod --region ap-northeast-1
+batchtop --profile [YOUR_AWS_PROFILE] --region [YOUR_AWS_REGION]
+```
+
+See other options on `batchtop --help`.
+
+## Install and run
+
+Requires Rust 1.94 or later.
+
+```bash
+cargo install --git https://github.com/ki-chi/batchtop --locked
+batchtop
 ```
 
 ## Keys
