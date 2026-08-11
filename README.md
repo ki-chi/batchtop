@@ -2,6 +2,8 @@
 
 `batchtop` is a read-only, keyboard-first AWS Batch TUI focused on Array Job progress and failed-child logs.
 
+![batchtop demo](docs/demo.png)
+
 ```bash
 batchtop --profile [YOUR_AWS_PROFILE] --region [YOUR_AWS_REGION]
 ```
