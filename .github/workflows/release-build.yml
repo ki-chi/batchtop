@@ -1,0 +1,64 @@
+name: Release builds
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+          - runner: macos-15
+            target: aarch64-apple-darwin
+
+    env:
+      CARGO_TERM_COLOR: always
+      CC: /usr/bin/clang
+      CXX: /usr/bin/clang++
+      RUST_VERSION: 1.94.0
+      TARGET: ${{ matrix.target }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --target "$TARGET"
+          rustup default "$RUST_VERSION"
+
+      - name: Build release binary
+        run: cargo build --release --locked --target "$TARGET"
+
+      - name: Smoke test binary
+        run: "target/$TARGET/release/batchtop --version"
+
+      - name: Package binary
+        run: |
+          set -euo pipefail
+          archive="batchtop-${GITHUB_REF_NAME}-${TARGET}.tar.gz"
+          mkdir -p dist
+          tar -C "target/$TARGET/release" -czf "dist/$archive" batchtop
+          cd dist
+          shasum -a 256 "$archive" > "$archive.sha256"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: batchtop-${{ github.ref_name }}-${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+          if-no-files-found: error
